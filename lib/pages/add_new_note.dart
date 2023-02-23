@@ -24,7 +24,7 @@ class _AddNewNotePageState extends State<AddNewNotePage> {
   void addNewNote() {
     Note newNote = Note(
       id: Uuid().v1(),
-      userId: "rainerregan",
+      userId: "rainer",
       title: titleController.text,
       content: contentController.text,
       dateAdded: DateTime.now(),
@@ -38,6 +38,7 @@ class _AddNewNotePageState extends State<AddNewNotePage> {
     // Setting the update
     widget.note!.title = titleController.text;
     widget.note!.content = contentController.text;
+    widget.note!.dateAdded = DateTime.now();
 
     // Update note
     Provider.of<NotesProvider>(context, listen: false).updateNote(widget.note!);

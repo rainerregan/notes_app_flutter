@@ -13,6 +13,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String searchQuery = "";
+
   @override
   Widget build(BuildContext context) {
     NotesProvider notesProvider = Provider.of<NotesProvider>(context);
@@ -22,72 +24,117 @@ class _HomePageState extends State<HomePage> {
         title: Text("Notes App"),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: (notesProvider.notes.length > 0) ? GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2),
-          itemCount: notesProvider.notes.length,
-          itemBuilder: (context, index) {
-            // Get the current note based on index
-            Note currentNote = notesProvider.notes[index];
+      body: (notesProvider.isLoading == false)
+          ? SafeArea(
+              child: (notesProvider.notes.length > 0)
+                  ? ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            onChanged: (val) {
+                              setState(() {
+                                searchQuery = val;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              hintText: "Search",
+                            ),
+                          ),
+                        ),
+                        (notesProvider.getFilteredNotes(searchQuery).length > 0)
+                            ? GridView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2),
+                                itemCount: notesProvider
+                                    .getFilteredNotes(searchQuery)
+                                    .length,
+                                itemBuilder: (context, index) {
+                                  // Get the current note based on index
+                                  Note currentNote = notesProvider
+                                      .getFilteredNotes(searchQuery)[index];
 
-            return GestureDetector(
-              onTap: () {
-                // Update
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (context) => AddNewNotePage(isUpdate: true, note: currentNote)),
-                );
-              },
-              onLongPress: () {
-                // Delete
-                notesProvider.deleteNote(currentNote);
-              },
-              child: Container(
-                margin: const EdgeInsets.all(5),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentNote.title!,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                                  return GestureDetector(
+                                    onTap: () {
+                                      // Update
+                                      Navigator.push(
+                                        context,
+                                        CupertinoPageRoute(
+                                            builder: (context) =>
+                                                AddNewNotePage(
+                                                    isUpdate: true,
+                                                    note: currentNote)),
+                                      );
+                                    },
+                                    onLongPress: () {
+                                      // Delete
+                                      notesProvider.deleteNote(currentNote);
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: Colors.grey,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            currentNote.title!,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 7),
+                                          Text(
+                                            currentNote.content!,
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.grey[700]),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 5,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Text(
+                                  "No notes found",
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                      ],
+                    )
+                  : const Center(
+                      child: Text("No notes yet. Click + to create one"),
                     ),
-                    const SizedBox(height: 7),
-                    Text(
-                      currentNote.content!,
-                      style: TextStyle(fontSize: 18, color: Colors.grey[700]),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 5,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ) : const Center(
-          child: Text("No notes yet. Click + to create one"),
-        ),
-      ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
               context,
               CupertinoPageRoute(
                 fullscreenDialog: true,
-                builder: (context) => const AddNewNotePage(isUpdate: false,),
+                builder: (context) => const AddNewNotePage(
+                  isUpdate: false,
+                ),
               ));
         },
         child: const Icon(Icons.add),
