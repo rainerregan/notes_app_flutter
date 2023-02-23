@@ -21,7 +21,8 @@ class Note {
     return {
       "id": id,
       "userId": userId,
-      "title": content,
+      "title": title,
+      "content": content,
       "dateAdded": dateAdded!.toIso8601String()
     };
   }
